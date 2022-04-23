@@ -32,20 +32,21 @@ def load_data(data_dir, output_dir):
 
     # initialize correlation measure
     correlation_measure = ConnectivityMeasure(
-        kind="correlation", vectorize=False, discard_diagonal=True
+        kind="tangent", vectorize=False, discard_diagonal=True
     )
 
     try:  # check if feature file already exists
         # load features
         feat_file = os.path.join(output_dir, "ABIDE_adjacency.npz")
-        adj_mat = np.load(feat_file)["a"]
+        correlation_matrices = np.load(feat_file)["a"]
 
         y_target = os.path.join(output_dir, "Y_target.npz")
         y_target = np.load(y_target)["a"]
         print("Feature file found.")
 
     except:  # if not, extract features
-        adj_mat = []
+        # correlation_matrices = []
+        time_series_ls = []
         y_target = []
         print("No feature file found. Extracting features...")
 
@@ -59,19 +60,19 @@ def load_data(data_dir, output_dir):
                         y_target.append(1)
                     else:
                         y_target.append(0)
-                    correlation_matrix = correlation_measure.fit_transform(
-                        [time_series]
-                    )[0]
 
-                    adj_mat.append(correlation_matrix)
+                    time_series_ls.append(time_series)
 
-        np.savez_compressed(os.path.join(output_dir, "ABIDE_adjacency"), a=adj_mat)
-        adj_mat = np.array(adj_mat)
+        correlation_matrices = correlation_measure.fit_transform(time_series_ls)
+
+        np.savez_compressed(
+            os.path.join(output_dir, "ABIDE_adjacency"), a=correlation_matrices
+        )
 
         np.savez_compressed(os.path.join(output_dir, "Y_target"), a=y_target)
         y_target = np.array(y_target)
 
-    return adj_mat, y_target
+    return correlation_matrices, y_target
 
 
 def run():
