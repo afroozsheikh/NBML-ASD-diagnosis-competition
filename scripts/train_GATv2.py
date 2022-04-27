@@ -108,8 +108,11 @@ def main(args):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     print("Used Device is : {}".format(device))
 
-    train_loader, val_loader, test_loader = data_preparation(
-        args.adj_path, args.y_path, args.batch_size
+    train_loader, val_loader = data_preparation(
+        adj_path=args.adj_path,
+        y_path=args.y_path,
+        batch_size=args.batch_size,
+        threshold=0.4,
     )
 
     model = GATv2(
