@@ -1,6 +1,7 @@
 import torch
 from torchmetrics import Accuracy
 from prettytable import PrettyTable
+import matplotlib.pyplot as plt
 
 
 def get_metrics(y_pred, y_true, loss_fn):
@@ -28,3 +29,14 @@ def count_parameters(model):
     print(table)
     print(f"Total Trainable Params: {total_params}")
     return total_params
+
+
+def plot_loss(train_losses, val_losses):
+
+    plt.plot(train_losses, "b", label="train_loss")
+    plt.plot(val_losses, "r", label="val_loss")
+    plt.xlabel("Epoch")
+    plt.ylabel("Loss")
+    plt.legend(loc="upper right")
+    plt.title("Traing and Validation losses curve")
+    plt.show()

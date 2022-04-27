@@ -4,7 +4,7 @@ import torch
 
 from models.GATv2 import GATv2
 from data.data_preparation import data_preparation
-from utils.utils import get_metrics, count_parameters
+from utils.utils import get_metrics, count_parameters, plot_loss
 
 
 def parse_arguments():
@@ -117,19 +117,20 @@ def main(args):
 
     model = GATv2(
         input_feat_dim=args.feat_dim,
-        dim_shapes=[(128, 64), (64, 64), (64, 32)],
+        dim_shapes=[(5, 64), (64, 64), (64, 32)],
         heads=args.heads,
         num_layers=3,
         num_classes=1,
         dropout_p=0.005,
     ).to(device)
 
-    # count_parameters(model)
+    count_parameters(model)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
     loss_fn = torch.nn.BCEWithLogitsLoss()
 
-    losses = []
+    train_losses = []
+    val_losses = []
 
     for epoch in range(1, 1 + args.epochs):
 
@@ -143,16 +144,19 @@ def main(args):
         val_y_pred, val_y_true = eval(model, device, val_loader)
         val_metrics = get_metrics(val_y_pred, val_y_true, loss_fn)
 
-        losses.append(train_metrics["loss"])
+        train_losses.append(train_metrics["loss"])
+        val_losses.append(val_metrics["loss"])
 
         print(
-            f"Epoch: {epoch:02d} \n"
+            f"Epoch: {epoch:02d} / {args.epochs:02d} \n"
             f"Loss: {train_metrics['loss']:.4f}, "
             f"Accuracy: {100 * train_metrics['acc']:.2f}%, "
             f"Val_Loss: {val_metrics['loss']:.4f}, "
             f"Val_Accuracy: {100 * val_metrics['acc']:.2f}%, "
         )
         print("===============================================================")
+
+    plot_loss(train_losses, val_losses)
 
 
 if __name__ == "__main__":
