@@ -44,7 +44,9 @@ def load_data(data_dir, output_dir, fc_matrix_kind):
 
     try:  # check if feature file already exists
         # load features
-        feat_file = os.path.join(output_dir, "ABIDE_adjacency.npz")
+        feat_file = os.path.join(
+            output_dir, "ABIDE_adjacency_" + fc_matrix_kind + ".npz"
+        )
         correlation_matrices = np.load(feat_file)["a"]
 
         y_target = os.path.join(output_dir, "Y_target.npz")
@@ -84,8 +86,10 @@ def load_data(data_dir, output_dir, fc_matrix_kind):
             correlation_matrices = correlation_measure.fit_transform(time_series_ls)
 
         np.savez_compressed(
-            os.path.join(output_dir, "ABIDE_adjacency"), a=correlation_matrices
+            os.path.join(output_dir, "ABIDE_adjacency_" + fc_matrix_kind),
+            a=correlation_matrices,
         )
+        correlation_matrices = np.array(correlation_matrices)
 
         np.savez_compressed(os.path.join(output_dir, "Y_target"), a=y_target)
         y_target = np.array(y_target)
