@@ -1,0 +1,10 @@
+nilearn
+numpy
+pandas
+sklearn
+networkx
+matplotlib
+tqdm
+argparse
+torch
+torchmetrics
