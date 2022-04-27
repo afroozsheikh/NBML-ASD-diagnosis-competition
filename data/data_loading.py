@@ -24,15 +24,22 @@ def parse_arguments():
         help="Path to the output file",
         required=True,
     )
+    parser.add_argument(
+        "--fc_matrix_kind",
+        type=str,
+        default="correlation",
+        help="different kinds of functional connectivity matrices : covariance, correlation, partial correlation, tangent, precision",
+        required=False,
+    )
     args = parser.parse_args()
     return args
 
 
-def load_data(data_dir, output_dir):
+def load_data(data_dir, output_dir, fc_matrix_kind):
 
     # initialize correlation measure
     correlation_measure = ConnectivityMeasure(
-        kind="tangent", vectorize=False, discard_diagonal=True
+        kind=fc_matrix_kind, vectorize=False, discard_diagonal=True
     )
 
     try:  # check if feature file already exists
@@ -45,25 +52,36 @@ def load_data(data_dir, output_dir):
         print("Feature file found.")
 
     except:  # if not, extract features
-        # correlation_matrices = []
-        time_series_ls = []
-        y_target = []
         print("No feature file found. Extracting features...")
+        time_series_ls = []
+        correlation_matrices = []
+        y_target = []
 
         for (root, dirs, files) in tqdm(os.walk(data_dir, topdown=True), position=0):
             for file in files:
                 if file.endswith(".csv"):
                     path = os.path.join(root, file)
-                    time_series = pd.read_csv(path).to_numpy()
-                    # print(f"shape of time series : {time_series.shape}") # (176, 111)
+
+                    ## creating y
                     if "ASD" in root:
                         y_target.append(1)
                     else:
                         y_target.append(0)
 
-                    time_series_ls.append(time_series)
+                    time_series = pd.read_csv(path).to_numpy()
+                    print(f"shape of time series : {time_series.shape}")  # (176, 111)
 
-        correlation_matrices = correlation_measure.fit_transform(time_series_ls)
+                    if fc_matrix_kind == "tangent":
+                        time_series_ls.append(time_series)
+
+                    else:
+                        correlation_matrix = correlation_measure.fit_transform(
+                            [time_series]
+                        )[0]
+                        correlation_matrices.append(correlation_matrix)
+
+        if fc_matrix_kind == "tangent":
+            correlation_matrices = correlation_measure.fit_transform(time_series_ls)
 
         np.savez_compressed(
             os.path.join(output_dir, "ABIDE_adjacency"), a=correlation_matrices
@@ -82,7 +100,6 @@ def run():
     print("***************************")
     print(y_target.shape)
     print("***************************")
-    print(adj_mat[0])
 
 
 if __name__ == "__main__":
