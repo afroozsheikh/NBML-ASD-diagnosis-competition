@@ -40,12 +40,19 @@ def parse_arguments():
         help="Size of batch",
         required=False,
     )
+    parser.add_argument(
+        "--threshold",
+        type=float,
+        default=0.5,
+        help="Threshold",
+        required=False,
+    )
 
     args = parser.parse_args()
     return args
 
 
-def data_preparation(adj_path, y_path, batch_size=1):
+def data_preparation(adj_path, y_path, batch_size=1, threshold=0.6):
     """Creates Data object of pytorch_geometric using graph features and edge list
 
     Parameters
@@ -64,7 +71,7 @@ def data_preparation(adj_path, y_path, batch_size=1):
     label = np.load(y_path)
     y_target = label["a"]
 
-    adj_mat = np.greater_equal(adj_mat, 0.5).astype(int)
+    adj_mat = np.greater_equal(adj_mat, threshold).astype(int)
 
     data_list = []
     ## Create a graph using networkx
@@ -88,17 +95,24 @@ def data_preparation(adj_path, y_path, batch_size=1):
         # print(y_target[i].item())
         data_list.append(Data(x=X, edge_index=edge_index.T, y=y_target[i].item()))
 
-    loader = DataLoader(data_list, batch_size=batch_size)
-    # data, slices = InMemoryDataset.collate(data_list) --> Not needed : collects and comibes all graphs to one graph
-    return loader
+    ## Split Dataset
+    train, test = train_test_split(data_list, test_size=0.33, shuffle=True)
+    val, test = train_test_split(test, test_size=0.5, shuffle=True)
+
+    train_data_loader = DataLoader(train, batch_size=batch_size)
+    val_data_loader = DataLoader(val, batch_size=batch_size)
+    test_data_loader = DataLoader(test, batch_size=batch_size)
+
+    return train_data_loader, val_data_loader, test_data_loader
 
 
 def main():
     args = parse_arguments()
-    loader = data_preparation(args.adj_path, args.y_path, args.batch_size)
-    for data in loader:
-        print(data)
-        print(data.y)
+    train_data_loader, val_data_loader, test_data_loader = data_preparation(
+        args.adj_path, args.y_path, args.batch_size, args.threshold
+    )
+    for data in train_data_loader:  # every batch
+        print(data, data.y)
 
 
 if __name__ == "__main__":
