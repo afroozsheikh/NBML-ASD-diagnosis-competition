@@ -100,23 +100,24 @@ def data_preparation(adj_path, y_path, batch_size=1, threshold=0.6):
         data_list.append(Data(x=X, edge_index=edge_index.T, y=y_target[i].item()))
 
     ## Split Dataset
-    train, test = train_test_split(data_list, test_size=0.2, shuffle=True)
-    val, test = train_test_split(test, test_size=0.5, shuffle=True)
+    train, val = train_test_split(
+        data_list, test_size=0.2, stratify=y_target, random_state=42
+    )
 
     train_data_loader = DataLoader(train, batch_size=batch_size)
     val_data_loader = DataLoader(val, batch_size=batch_size)
-    test_data_loader = DataLoader(test, batch_size=batch_size)
 
-    return train_data_loader, val_data_loader, test_data_loader
+    return train_data_loader, val_data_loader
 
 
 def main():
     args = parse_arguments()
-    train_data_loader, val_data_loader, test_data_loader = data_preparation(
+    train_data_loader, val_data_loader = data_preparation(
         args.adj_path, args.y_path, args.batch_size, args.threshold
     )
-    for data in train_data_loader:  # every batch
-        print(data, data.y)
+
+    for i, data in enumerate(train_data_loader):  # every batch
+        print(i, data, data.y)
 
 
 if __name__ == "__main__":
