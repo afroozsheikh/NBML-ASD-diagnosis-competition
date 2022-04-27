@@ -13,6 +13,7 @@ import torch
 from torch_geometric.data import Data
 from torch_geometric.loader import DataLoader
 from torch_geometric.data import InMemoryDataset
+from sklearn.model_selection import train_test_split
 
 
 def parse_arguments():
@@ -22,14 +23,14 @@ def parse_arguments():
     parser.add_argument(
         "--adj_path",
         type=str,
-        default=r"C:\Users\Afrooz Sheikholeslam\Education\8th semester\Project1\Code\Out\ABIDE_adjacency.npz",
+        default=r"C:\Users\Afrooz Sheikholeslam\Education\8th semester\Project1\competition\out\ABIDE_adjacency.npz",
         help="Path to the adjacancy matrix",
         required=True,
     )
     parser.add_argument(
         "--y_path",
         type=str,
-        default=r"C:\Users\Afrooz Sheikholeslam\Education\8th semester\Project1\Code\Out\Y_target.npz",
+        default=r"C:\Users\Afrooz Sheikholeslam\Education\8th semester\Project1\competition\out\Y_target.npz",
         help="Path to the y target",
         required=True,
     )
@@ -70,6 +71,7 @@ def data_preparation(adj_path, y_path, batch_size=1, threshold=0.6):
 
     label = np.load(y_path)
     y_target = label["a"]
+    print(y_target.shape)
 
     adj_mat = np.greater_equal(adj_mat, threshold).astype(int)
 
@@ -82,7 +84,9 @@ def data_preparation(adj_path, y_path, batch_size=1, threshold=0.6):
         features = pd.DataFrame(
             {
                 "degree": dict(G.degree).values(),
-                "eigen_vector_centrality": dict(nx.eigenvector_centrality(G)).values(),
+                "eigen_vector_centrality": dict(
+                    nx.eigenvector_centrality(G, tol=1.0e-3)
+                ).values(),
                 "betweenness": dict(betweenness_centrality(G)).values(),
                 "closeness": dict(closeness_centrality(G)).values(),
                 "clustring_coef": dict(clustering(G)).values(),
@@ -96,7 +100,7 @@ def data_preparation(adj_path, y_path, batch_size=1, threshold=0.6):
         data_list.append(Data(x=X, edge_index=edge_index.T, y=y_target[i].item()))
 
     ## Split Dataset
-    train, test = train_test_split(data_list, test_size=0.33, shuffle=True)
+    train, test = train_test_split(data_list, test_size=0.2, shuffle=True)
     val, test = train_test_split(test, test_size=0.5, shuffle=True)
 
     train_data_loader = DataLoader(train, batch_size=batch_size)

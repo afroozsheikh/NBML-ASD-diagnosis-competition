@@ -95,7 +95,9 @@ def load_data(data_dir, output_dir, fc_matrix_kind):
 
 def run():
     args = parse_arguments()
-    adj_mat, y_target = load_data(args.train_data_path, args.output_path)
+    adj_mat, y_target = load_data(
+        args.train_data_path, args.output_path, args.fc_matrix_kind
+    )
     print(adj_mat.shape)
     print("***************************")
     print(y_target.shape)
