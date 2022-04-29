@@ -85,7 +85,7 @@ def data_preparation(adj_path, y_path, batch_size=1, threshold=0.6):
             {
                 "degree": dict(G.degree).values(),
                 "eigen_vector_centrality": dict(
-                    nx.eigenvector_centrality(G, tol=1.0e-3)
+                    nx.eigenvector_centrality(G, tol=1.0e-3, max_iter=10000)
                 ).values(),
                 "betweenness": dict(betweenness_centrality(G)).values(),
                 "closeness": dict(closeness_centrality(G)).values(),
