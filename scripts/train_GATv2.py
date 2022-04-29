@@ -58,29 +58,46 @@ def parse_arguments():
     return args
 
 
-def train(model, device, data_loader, optimizer, loss_fn):
+def train(model, device, batch, optimizer, loss_fn):
 
     model.train()
 
-    for step, batch in enumerate(tqdm(data_loader, desc="Iteration", ncols=100)):
+    batch = batch.to(device)
+    optimizer.zero_grad()
+    pred = model(batch)
+    loss = loss_fn(pred.squeeze(), batch.y.float())
 
-        batch = batch.to(device)
-        optimizer.zero_grad()
-        pred = model(batch)
-        loss = loss_fn(pred.squeeze(), batch.y.float())
-
-        loss.backward()
-        optimizer.step()
+    loss.backward()
+    optimizer.step()
 
     return loss.item()
 
 
-def eval(model, device, loader):
+def eval_batch(model, device, batch):
+
+    model.eval()
+    batch = batch.to(device)
+
+    with torch.no_grad():
+        y_pred = model(batch).detach().cpu()
+
+        # y_true.append(batch.y.view(pred.shape).detach().cpu())
+        # y_pred.append(pred.detach().cpu())
+
+    y_true = batch.y.view(y_pred.shape).detach().cpu()
+
+    # y_true = torch.cat(y_true, dim=0)
+    # y_pred = torch.cat(y_pred, dim=0)
+
+    return y_pred, y_true
+
+
+def eval(model, device, dataloader):
     model.eval()
     y_true = []
     y_pred = []
 
-    for step, batch in enumerate(tqdm(loader, desc="Iteration", ncols=100)):
+    for batch in dataloader:
 
         batch = batch.to(device)
 
@@ -126,11 +143,19 @@ def main(args):
     val_losses = []
 
     for epoch in range(1, 1 + args.epochs):
+        loop = tqdm(enumerate(train_loader), total=len(train_loader))
+        for batch_idx, batch in loop:
 
-        print("Training............")
-        loss = train(model, device, train_loader, optimizer, loss_fn)
+            loss = train(model, device, batch, optimizer, loss_fn)
 
-        print("Evaluating............")
+            y_pred, y_true = eval_batch(model, device, batch)
+            train_metrics_batch = get_metrics(y_pred, y_true, loss_fn)
+
+            loop.set_description(f"Epoch: {epoch:02d}/{args.epochs:02d}")
+            loop.set_postfix_str(
+                f"Loss: {loss:.4f}, Accuracy: {100 * train_metrics_batch['acc']:.2f}%"
+            )
+
         train_y_pred, train_y_true = eval(model, device, train_loader)
         train_metrics = get_metrics(train_y_pred, train_y_true, loss_fn)
 
@@ -141,13 +166,11 @@ def main(args):
         val_losses.append(val_metrics["loss"])
 
         print(
-            f"Epoch: {epoch:02d} / {args.epochs:02d} \n"
             f"Loss: {train_metrics['loss']:.4f}, "
             f"Accuracy: {100 * train_metrics['acc']:.2f}%, "
             f"Val_Loss: {val_metrics['loss']:.4f}, "
-            f"Val_Accuracy: {100 * val_metrics['acc']:.2f}%, "
+            f"Val_Accuracy: {100 * val_metrics['acc']:.2f}%"
         )
-        print("===============================================================")
 
     plot_loss(train_losses, val_losses)
 
