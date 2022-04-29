@@ -13,8 +13,10 @@ class GATv2(torch.nn.Module):
         super(GATv2, self).__init__()
         assert num_layers >= 1, "Number of layers should be more than or equal to 1"
         self.num_layers = num_layers
+        self.linear = None
 
-        self.linear = nn.Linear(input_feat_dim, dim_shapes[0][0])
+        if input_feat_dim != dim_shapes[0][0]:
+            self.linear = nn.Linear(input_feat_dim, dim_shapes[0][0])
 
         self.convs = nn.ModuleList()
         for l in range(num_layers):
@@ -42,7 +44,9 @@ class GATv2(torch.nn.Module):
             batched_data.edge_index,
             batched_data.batch,
         )
-        # x = self.linear(x.float())
+
+        if self.linear is not None:
+            x = self.linear(x.float())
 
         for l in range(self.num_layers):
             x = F.relu(self.convs[l](x.float(), edge_index))

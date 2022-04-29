@@ -117,7 +117,7 @@ def main(args):
 
     model = GATv2(
         input_feat_dim=args.feat_dim,
-        dim_shapes=[(5, 64), (64, 64), (64, 32)],
+        dim_shapes=[(128, 64), (64, 64), (64, 32)],
         heads=args.heads,
         num_layers=3,
         num_classes=1,
