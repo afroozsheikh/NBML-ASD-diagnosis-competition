@@ -150,13 +150,7 @@ def eval_batch(model, device, batch):
     with torch.no_grad():
         y_pred = model(batch).detach().cpu()
 
-        # y_true.append(batch.y.view(pred.shape).detach().cpu())
-        # y_pred.append(pred.detach().cpu())
-
     y_true = batch.y.view(y_pred.shape).detach().cpu()
-
-    # y_true = torch.cat(y_true, dim=0)
-    # y_pred = torch.cat(y_pred, dim=0)
 
     return y_pred, y_true
 
