@@ -14,15 +14,36 @@ def parse_arguments():
     parser.add_argument(
         "--adj_path",
         type=str,
-        default=r"C:\Users\Afrooz Sheikholeslam\Education\8th semester\Project1\Code\Out\ABIDE_adjacency.npz",
+        default=r"C:\Users\Afrooz Sheikholeslam\Education\8th semester\Project1\competition\out\train_adjacency_tangent.npz",
         help="Path to the adjacancy matrix",
+        required=True,
+    )
+    parser.add_argument(
+        "--test_adj_path",
+        type=str,
+        default=r"C:\Users\Afrooz Sheikholeslam\Education\8th semester\Project1\competition\out\test_adjacency_tangent.npz",
+        help="Path to the test adjacancy matrix",
         required=True,
     )
     parser.add_argument(
         "--y_path",
         type=str,
-        default=r"C:\Users\Afrooz Sheikholeslam\Education\8th semester\Project1\Code\Out\Y_target.npz",
+        default=r"C:\Users\Afrooz Sheikholeslam\Education\8th semester\Project1\competition\out\Y_target.npz",
         help="Path to the y target",
+        required=True,
+    )
+    parser.add_argument(
+        "--time_series_path",
+        type=str,
+        default=r"C:\Users\Afrooz Sheikholeslam\Education\8th semester\Project1\competition\out\time_series.npz",
+        help="Path to the time series matrix",
+        required=True,
+    )
+    parser.add_argument(
+        "--test_time_series_path",
+        type=str,
+        default=r"C:\Users\Afrooz Sheikholeslam\Education\8th semester\Project1\competition\out\test_time_series.npz",
+        help="Path to the test time series matrix",
         required=True,
     )
     parser.add_argument(
@@ -30,7 +51,7 @@ def parse_arguments():
         type=int,
         default=1,
         help="Size of batch",
-        required=True,
+        required=False,
     )
     parser.add_argument(
         "--epochs",
@@ -112,9 +133,12 @@ def main(args):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     print("Used Device is : {}".format(device))
 
-    train_loader, val_loader = data_preparation(
+    train_loader, val_loader, test_loader = data_preparation(
         adj_path=args.adj_path,
+        test_adj_path=args.test_adj_path,
         y_path=args.y_path,
+        time_series_path=args.time_series_path,
+        test_time_series_path=args.test_time_series_path,
         batch_size=args.batch_size,
         threshold=0.4,
     )
