@@ -115,15 +115,11 @@ def data_preparation(
     test_adj_mat = np.greater_equal(test_adj_mat, threshold).astype(int)
 
     data_list = []
+    test_data_list = []
+
     ## Create a graph using networkx
     for i in range(adj_mat.shape[0]):  ## same as time_series.shape[0]
         G = nx.from_numpy_matrix(adj_mat[i])
-
-        ## Extract features
-        # print(time_series.mean())
-        # print(time_series.var())
-        # print(skew(time_series, axis=None))
-        # print(kurtosis(time_series, axis=None))
 
         features = pd.DataFrame(
             {
@@ -145,7 +141,6 @@ def data_preparation(
         print(X.shape)
         edge_index = torch.tensor(list(G.edges()))
 
-        # print(y_target[i].item())
         data_list.append(Data(x=X, edge_index=edge_index.T, y=y_target[i].item()))
 
     ## Split Dataset
@@ -156,7 +151,35 @@ def data_preparation(
     train_data_loader = DataLoader(train, batch_size=batch_size)
     val_data_loader = DataLoader(val, batch_size=batch_size)
 
-    test_data_loader = []
+    #### Create Test dataloader ######################################
+    for i in range(test_adj_mat.shape[0]):  ## same as test_time_series.shape[0]
+        G = nx.from_numpy_matrix(test_adj_mat[i])
+
+        test_features = pd.DataFrame(
+            {
+                "degree": dict(G.degree).values(),
+                "eigen_vector_centrality": dict(
+                    nx.eigenvector_centrality(G, tol=1.0e-3)
+                ).values(),
+                "betweenness": dict(betweenness_centrality(G)).values(),
+                "closeness": dict(closeness_centrality(G)).values(),
+                "clustring_coef": dict(clustering(G)).values(),
+                "time_series_mean": time_series.mean(),
+                "time_series_variance": time_series.var(),
+                "time_series_skew": skew(time_series, axis=None),
+                "time_series_kurtosis": kurtosis(time_series, axis=None),
+            }
+        )
+
+        X_test = torch.tensor(test_features.values)
+        print(X_test.shape)
+        test_edge_index = torch.tensor(list(G.edges()))
+
+        # print(y_target[i].item())
+        test_data_list.append(Data(x=X_test, edge_index=test_edge_index.T))
+
+    test_data_loader = DataLoader(test_data_list, batch_size=batch_size)
+
     return train_data_loader, val_data_loader, test_data_loader
 
 
