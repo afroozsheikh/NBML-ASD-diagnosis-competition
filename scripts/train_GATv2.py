@@ -26,13 +26,6 @@ def parse_arguments():
         required=True,
     )
     parser.add_argument(
-        "--feat_dim",
-        type=int,
-        default=7,
-        help="Size of each node feature vector",
-        required=True,
-    )
-    parser.add_argument(
         "--batch_size",
         type=int,
         default=1,
@@ -116,7 +109,7 @@ def main(args):
     )
 
     model = GATv2(
-        input_feat_dim=args.feat_dim,
+        input_feat_dim=next(iter(train_loader)).x.shape[1],
         dim_shapes=[(128, 64), (64, 64), (64, 32)],
         heads=args.heads,
         num_layers=3,
