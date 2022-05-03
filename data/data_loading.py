@@ -124,7 +124,7 @@ def load_data(data_dir, test_data_dir, output_dir, fc_matrix_kind):
                     test_time_series = test_time_series.to_numpy()
                     print(
                         f"shape of time series : {test_time_series.shape}"
-                    )  # (176, 111)
+                    )  # (176, 110)
 
                     # if fc_matrix_kind == "tangent":
                     test_time_series_ls.append(test_time_series)
