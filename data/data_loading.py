@@ -94,7 +94,7 @@ def load_data(data_dir, test_data_dir, output_dir, fc_matrix_kind):
                     time_series = pd.read_csv(path)
                     time_series.drop(time_series.columns[0], axis=1, inplace=True)
                     time_series = time_series.to_numpy()
-                    print(f"shape of time series : {time_series.shape}")  # (176, 110)
+                    print(f"shape of time series : {time_series.shape}")  # (176, 110 )
 
                     # if fc_matrix_kind == "tangent":
                     time_series_ls.append(time_series)

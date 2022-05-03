@@ -138,7 +138,6 @@ def data_preparation(
         )
 
         X = torch.tensor(features.values)
-        print(X.shape)
         edge_index = torch.tensor(list(G.edges()))
 
         data_list.append(Data(x=X, edge_index=edge_index.T, y=y_target[i].item()))
@@ -172,7 +171,6 @@ def data_preparation(
         )
 
         X_test = torch.tensor(test_features.values)
-        print(X_test.shape)
         test_edge_index = torch.tensor(list(G.edges()))
 
         # print(y_target[i].item())
@@ -196,7 +194,16 @@ def main():
         args.threshold,
     )
 
+    print("************* Train Dataloader **********************")
     for i, data in enumerate(train_data_loader):  # every batch
+        print(i, data, data.y)
+
+    print("************* Val Dataloader **********************")
+    for i, data in enumerate(val_data_loader):  # every batch
+        print(i, data, data.y)
+
+    print("************* Test Dataloader **********************")
+    for i, data in enumerate(test_data_loader):  # every batch
         print(i, data, data.y)
 
 
