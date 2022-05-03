@@ -64,6 +64,12 @@ def load_data(data_dir, test_data_dir, output_dir, fc_matrix_kind):
         y_target = os.path.join(output_dir, "Y_target.npz")
         y_target = np.load(y_target)["a"]
 
+        time_series_ls = os.path.join(output_dir, "time_series.npz")
+        time_series_ls = np.load(time_series_ls)["a"]
+
+        test_time_series_ls = os.path.join(output_dir, "test_time_series.npz")
+        test_time_series_ls = np.load(test_time_series_ls)["a"]
+
         print("Feature file found.")
 
     except:  # if not, extract features
@@ -88,10 +94,10 @@ def load_data(data_dir, test_data_dir, output_dir, fc_matrix_kind):
                     time_series = pd.read_csv(path).to_numpy()
                     print(f"shape of time series : {time_series.shape}")  # (176, 111)
 
-                    if fc_matrix_kind == "tangent":
-                        time_series_ls.append(time_series)
+                    # if fc_matrix_kind == "tangent":
+                    time_series_ls.append(time_series)
 
-                    else:
+                    if fc_matrix_kind != "tangent":
                         correlation_matrix = correlation_measure.fit_transform(
                             [time_series]
                         )[0]
@@ -112,10 +118,10 @@ def load_data(data_dir, test_data_dir, output_dir, fc_matrix_kind):
                         f"shape of time series : {test_time_series.shape}"
                     )  # (176, 111)
 
-                    if fc_matrix_kind == "tangent":
-                        test_time_series_ls.append(test_time_series)
+                    # if fc_matrix_kind == "tangent":
+                    test_time_series_ls.append(test_time_series)
 
-                    else:
+                    if fc_matrix_kind != "tangent":
                         test_correlation_matrix = correlation_measure.fit_transform(
                             [test_time_series]
                         )[0]
@@ -131,22 +137,41 @@ def load_data(data_dir, test_data_dir, output_dir, fc_matrix_kind):
             a=correlation_matrices,
         )
 
-        np.savez_compressed(os.path.join(output_dir, "Y_target"), a=y_target)
-        y_target = np.array(y_target)
-
         np.savez_compressed(
             os.path.join(output_dir, "test_adjacency_" + fc_matrix_kind),
             a=test_correlation_matrices,
         )
+
+        np.savez_compressed(os.path.join(output_dir, "Y_target"), a=y_target)
+        y_target = np.array(y_target)
+
+        np.savez_compressed(
+            os.path.join(output_dir, "time_series"),
+            a=time_series_ls,
+        )
+
+        np.savez_compressed(
+            os.path.join(output_dir, "test_time_series"),
+            a=test_time_series_ls,
+        )
+
         correlation_matrices = np.array(correlation_matrices)
         test_correlation_matrices = np.array(test_correlation_matrices)
+        time_series_ls = np.array(time_series_ls)
+        test_time_series_ls = np.array(test_time_series_ls)
 
-    return correlation_matrices, y_target, test_correlation_matrices
+    return (
+        correlation_matrices,
+        test_correlation_matrices,
+        y_target,
+        time_series_ls,
+        test_time_series_ls,
+    )
 
 
 def run():
     args = parse_arguments()
-    adj_mat, y_target, test_adj_mat = load_data(
+    adj_mat, test_adj_mat, y_target, time_series, test_time_series = load_data(
         args.train_data_path, args.test_data_path, args.output_path, args.fc_matrix_kind
     )
     print("train adjacancy shape:", adj_mat.shape)
@@ -154,6 +179,10 @@ def run():
     print("test adjacancy shape:", test_adj_mat.shape)
     print("***************************")
     print("y target shape:", y_target.shape)
+    print("***************************")
+    print("time series shape:", time_series.shape)
+    print("***************************")
+    print("test time series shape:", test_time_series.shape)
     print("***************************")
 
 
