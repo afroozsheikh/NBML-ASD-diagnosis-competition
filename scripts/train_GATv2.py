@@ -1,6 +1,7 @@
 import argparse
 from tqdm import tqdm
 import torch
+import pandas as pd
 
 from models.GATv2 import GATv2
 from data.data_preparation import data_preparation
@@ -82,7 +83,6 @@ def parse_arguments():
 def train(model, device, batch, optimizer, loss_fn):
 
     model.train()
-
     batch = batch.to(device)
     optimizer.zero_grad()
     pred = model(batch)
@@ -142,14 +142,17 @@ def main(args):
         batch_size=args.batch_size,
         threshold=0.4,
     )
-
+    # print("======================================")
+    # df = pd.DataFrame(next(iter(train_loader)).x.numpy())
+    # print(df.describe())
+    # print("======================================")
     model = GATv2(
         input_feat_dim=next(iter(train_loader)).x.shape[1],
         dim_shapes=[(128, 64), (64, 64), (64, 32)],
         heads=args.heads,
         num_layers=3,
         num_classes=1,
-        dropout_p=0.005,
+        dropout_p=0.2,
     ).to(device)
 
     count_parameters(model)

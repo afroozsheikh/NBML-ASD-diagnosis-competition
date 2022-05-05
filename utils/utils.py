@@ -6,6 +6,9 @@ import matplotlib.pyplot as plt
 
 def get_metrics(y_pred, y_true, loss_fn):
 
+    # print("******************************************")
+    # print(y_pred)
+    # print("******************************************")
     y_pred_int = (y_pred >= 0.5).type(torch.int32)
 
     metrics = {}
