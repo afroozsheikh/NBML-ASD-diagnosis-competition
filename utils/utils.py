@@ -4,15 +4,14 @@ from prettytable import PrettyTable
 import matplotlib.pyplot as plt
 
 
-def get_metrics(y_pred, y_true, loss_fn):
+def get_metrics(y_pred, y_true):
 
-    y_pred_int = (y_pred >= 0.5).type(torch.int32)
+    y_pred_int = (y_pred >= 0.5).int()
 
     metrics = {}
     acc = Accuracy()
 
     metrics["acc"] = acc(y_pred_int, y_true)
-    metrics["loss"] = loss_fn(y_pred, y_true.float())
 
     return metrics
 

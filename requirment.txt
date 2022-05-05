@@ -8,4 +8,3 @@ tqdm
 argparse
 torch
 torchmetrics
-matplotlib

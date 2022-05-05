@@ -15,6 +15,7 @@ from torch_geometric.loader import DataLoader
 from torch_geometric.data import InMemoryDataset
 from sklearn.model_selection import train_test_split
 from scipy.stats import skew, kurtosis
+from sklearn.preprocessing import MinMaxScaler
 
 
 def parse_arguments():
@@ -129,15 +130,17 @@ def data_preparation(
                 ).values(),
                 "betweenness": dict(betweenness_centrality(G)).values(),
                 "closeness": dict(closeness_centrality(G)).values(),
-                "clustring_coef": dict(clustering(G)).values(),
-                "time_series_mean": time_series.mean(),
-                "time_series_variance": time_series.var(),
-                "time_series_skew": skew(time_series, axis=None),
-                "time_series_kurtosis": kurtosis(time_series, axis=None),
+                "time_series_mean": time_series[i].mean(axis=0),
+                "time_series_variance": time_series[i].var(axis=0),
+                "time_series_skew": skew(time_series[i], axis=0),
+                "time_series_kurtosis": kurtosis(time_series[i], axis=0),
             }
         )
 
-        X = torch.tensor(features.values)
+        scaler = MinMaxScaler()
+        features = scaler.fit_transform(features)
+
+        X = torch.tensor(features)
         edge_index = torch.tensor(list(G.edges()))
 
         data_list.append(Data(x=X, edge_index=edge_index.T, y=y_target[i].item()))
@@ -162,15 +165,17 @@ def data_preparation(
                 ).values(),
                 "betweenness": dict(betweenness_centrality(G)).values(),
                 "closeness": dict(closeness_centrality(G)).values(),
-                "clustring_coef": dict(clustering(G)).values(),
-                "time_series_mean": time_series.mean(),
-                "time_series_variance": time_series.var(),
-                "time_series_skew": skew(time_series, axis=None),
-                "time_series_kurtosis": kurtosis(time_series, axis=None),
+                "time_series_mean": test_time_series[i].mean(axis=0),
+                "time_series_variance": test_time_series[i].var(axis=0),
+                "time_series_skew": skew(test_time_series[i], axis=0),
+                "time_series_kurtosis": kurtosis(test_time_series[i], axis=0),
             }
         )
 
-        X_test = torch.tensor(test_features.values)
+        scaler = MinMaxScaler()
+        test_features = scaler.fit_transform(test_features)
+
+        X_test = torch.tensor(test_features)
         test_edge_index = torch.tensor(list(G.edges()))
 
         # print(y_target[i].item())
@@ -196,15 +201,15 @@ def main():
 
     print("************* Train Dataloader **********************")
     for i, data in enumerate(train_data_loader):  # every batch
-        print(i, data, data.y)
+        print(f"{i}, {data} label: {data.y}")
 
     print("************* Val Dataloader **********************")
     for i, data in enumerate(val_data_loader):  # every batch
-        print(i, data, data.y)
+        print(f"{i}, {data} label: {data.y}")
 
     print("************* Test Dataloader **********************")
     for i, data in enumerate(test_data_loader):  # every batch
-        print(i, data, data.y)
+        print(f"{i}, {data} label: {data.y}")
 
 
 if __name__ == "__main__":
