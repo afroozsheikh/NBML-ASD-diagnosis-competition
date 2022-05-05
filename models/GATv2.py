@@ -52,7 +52,7 @@ class GATv2(torch.nn.Module):
             x = F.relu(self.convs[l](x.float(), edge_index))
 
         x = self.pooling(x, batch)
-        # x = F.dropout(x, p=self.dropout)
+        x = F.dropout(x, p=self.dropout)
         x = self.classifier(x)
 
         return x

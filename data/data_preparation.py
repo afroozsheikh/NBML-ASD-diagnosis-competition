@@ -201,15 +201,15 @@ def main():
 
     print("************* Train Dataloader **********************")
     for i, data in enumerate(train_data_loader):  # every batch
-        print(i, data, data.y)
+        print(f"{i}, {data} label: {data.y}")
 
     print("************* Val Dataloader **********************")
     for i, data in enumerate(val_data_loader):  # every batch
-        print(i, data, data.y)
+        print(f"{i}, {data} label: {data.y}")
 
     print("************* Test Dataloader **********************")
     for i, data in enumerate(test_data_loader):  # every batch
-        print(i, data, data.y)
+        print(f"{i}, {data} label: {data.y}")
 
 
 if __name__ == "__main__":

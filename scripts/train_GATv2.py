@@ -100,14 +100,16 @@ def eval_batch(model, device, batch):
     batch = batch.to(device)
 
     with torch.no_grad():
-        y_pred = model(batch).detach().cpu()
+        y_pred = model(batch)
 
+    y_pred = y_pred.detach().cpu()
     y_true = batch.y.view(y_pred.shape).detach().cpu()
 
     return y_pred, y_true
 
 
-def eval(model, device, dataloader):
+def eval(model, device, dataloader, loss_fn):
+
     model.eval()
     y_true = []
     y_pred = []
@@ -115,17 +117,19 @@ def eval(model, device, dataloader):
     for batch in dataloader:
 
         batch = batch.to(device)
-
         with torch.no_grad():
             pred = model(batch)
+            y_true.append(batch.y.view(pred.shape))
+            y_pred.append(pred)
 
-            y_true.append(batch.y.view(pred.shape).detach().cpu())
-            y_pred.append(pred.detach().cpu())
+    y_true = torch.cat(y_true, dim=0).float().squeeze()
+    y_pred = torch.cat(y_pred, dim=0).float().squeeze()
 
-    y_true = torch.cat(y_true, dim=0)
-    y_pred = torch.cat(y_pred, dim=0)
+    val_loss = loss_fn(y_pred, y_true)
+    y_true = y_true.detach().cpu().int()
+    y_pred = y_pred.detach().cpu().int()
 
-    return y_pred, y_true
+    return val_loss, y_pred, y_true
 
 
 def main(args):
@@ -140,15 +144,17 @@ def main(args):
         time_series_path=args.time_series_path,
         test_time_series_path=args.test_time_series_path,
         batch_size=args.batch_size,
-        threshold=0.4,
+        threshold=0.2,
     )
+
     # print("======================================")
     # df = pd.DataFrame(next(iter(train_loader)).x.numpy())
     # print(df.describe())
     # print("======================================")
+
     model = GATv2(
         input_feat_dim=next(iter(train_loader)).x.shape[1],
-        dim_shapes=[(128, 64), (64, 64), (64, 32)],
+        dim_shapes=[(64, 32), (32, 16), (16, 16)],
         heads=args.heads,
         num_layers=3,
         num_classes=1,
@@ -170,26 +176,26 @@ def main(args):
             loss = train(model, device, batch, optimizer, loss_fn)
 
             y_pred, y_true = eval_batch(model, device, batch)
-            train_metrics_batch = get_metrics(y_pred, y_true, loss_fn)
+            train_metrics_batch = get_metrics(y_pred, y_true)
 
             loop.set_description(f"Epoch: {epoch:02d}/{args.epochs:02d}")
             loop.set_postfix_str(
                 f"Loss: {loss:.4f}, Accuracy: {100 * train_metrics_batch['acc']:.2f}%"
             )
 
-        train_y_pred, train_y_true = eval(model, device, train_loader)
-        train_metrics = get_metrics(train_y_pred, train_y_true, loss_fn)
+        loss, train_y_pred, train_y_true = eval(model, device, train_loader, loss_fn)
+        train_metrics = get_metrics(train_y_pred, train_y_true)
 
-        val_y_pred, val_y_true = eval(model, device, val_loader)
-        val_metrics = get_metrics(val_y_pred, val_y_true, loss_fn)
+        val_loss, val_y_pred, val_y_true = eval(model, device, val_loader, loss_fn)
+        val_metrics = get_metrics(val_y_pred, val_y_true)
 
-        train_losses.append(train_metrics["loss"])
-        val_losses.append(val_metrics["loss"])
+        train_losses.append(loss)
+        val_losses.append(val_loss)
 
         print(
-            f"Loss: {train_metrics['loss']:.4f}, "
+            f"Loss: {loss:.4f}, "
             f"Accuracy: {100 * train_metrics['acc']:.2f}%, "
-            f"Val_Loss: {val_metrics['loss']:.4f}, "
+            f"Val_Loss: {val_loss:.4f}, "
             f"Val_Accuracy: {100 * val_metrics['acc']:.2f}%"
         )
 
