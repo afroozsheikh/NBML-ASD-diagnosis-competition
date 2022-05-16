@@ -56,3 +56,6 @@ class GATv2(torch.nn.Module):
         x = self.classifier(x)
 
         return x
+
+    def load_weights(self, path):
+        self.load_state_dict(torch.load(path))

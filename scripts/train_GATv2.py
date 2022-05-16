@@ -1,4 +1,5 @@
 import argparse
+from pyrsistent import v
 from tqdm import tqdm
 import torch
 import pandas as pd
@@ -45,6 +46,13 @@ def parse_arguments():
         type=str,
         default=r"C:\Users\Afrooz Sheikholeslam\Education\8th semester\Project1\competition\out\test_time_series.npz",
         help="Path to the test time series matrix",
+        required=True,
+    )
+    parser.add_argument(
+        "--weights_path",
+        type=str,
+        default=r"C:\Users\Afrooz Sheikholeslam\Education\8th semester\Project1\competition",
+        help="Path to the weights path",
         required=True,
     )
     parser.add_argument(
@@ -182,6 +190,9 @@ def main(args):
         dropout_p=0.2,
     ).to(device)
 
+    if args.weights_path is not None:
+        model.load_weights(args.weights_path)
+
     count_parameters(model)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
@@ -190,6 +201,7 @@ def main(args):
     train_losses = []
     val_losses = []
     last_val_loss = 0
+    best_val_loss = 1000
     trigger_times = 0
 
     for epoch in range(1, 1 + args.epochs):
@@ -221,6 +233,11 @@ def main(args):
             f"Val_Loss: {val_loss:.4f}, "
             f"Val_Accuracy: {100 * val_metrics['acc']:.2f}%"
         )
+
+        # Model Checkpoint
+        if val_loss > best_val_loss:
+            torch.save(model.state_dict(), args.weights_path)
+            print(f"Model Checkpointed: model saved in {args.weights_path}")
 
         # Early stopping
         if val_loss > last_val_loss:
