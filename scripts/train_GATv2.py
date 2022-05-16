@@ -75,6 +75,13 @@ def parse_arguments():
         help="Learning Rate used for training the model",
         required=False,
     )
+    parser.add_argument(
+        "--patience",
+        type=int,
+        default=10,
+        help="Earlt Stopping patience",
+        required=False,
+    )
 
     args = parser.parse_args()
     return args
@@ -182,6 +189,8 @@ def main(args):
 
     train_losses = []
     val_losses = []
+    last_val_loss = 0
+    trigger_times = 0
 
     for epoch in range(1, 1 + args.epochs):
         loop = tqdm(enumerate(train_loader), total=len(train_loader))
@@ -212,6 +221,22 @@ def main(args):
             f"Val_Loss: {val_loss:.4f}, "
             f"Val_Accuracy: {100 * val_metrics['acc']:.2f}%"
         )
+
+        # Early stopping
+        if val_loss > last_val_loss:
+            trigger_times += 1
+            print(
+                f"Val_Loss didn't improve from {last_val_loss}, trigger_times is {trigger_times}"
+            )
+
+            if trigger_times >= args.patience:
+                print("Early stopping reached trigger_times limit")
+
+        else:
+            print(f"Val_Loss improved from {last_val_loss} to {val_loss}")
+            trigger_times = 0
+
+        last_val_loss = val_loss
 
     plot_loss(train_losses, val_losses)
 
