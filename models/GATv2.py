@@ -7,7 +7,7 @@ from torch_geometric.nn import GATv2Conv, global_max_pool
 
 class GATv2(torch.nn.Module):
     def __init__(
-        self, input_feat_dim, dim_shapes, heads, num_layers, num_classes, dropout_p
+        self, input_feat_dim, dim_shapes, heads, num_layers, num_classes, dropout_rate=0
     ):
 
         super(GATv2, self).__init__()
@@ -29,7 +29,7 @@ class GATv2(torch.nn.Module):
                     GATv2Conv(dim_shapes[l][0] * heads, dim_shapes[l][1], heads=heads)
                 )
 
-        self.dropout = dropout_p
+        self.dropout = dropout_rate
         self.pooling = global_max_pool
 
         self.classifier = nn.Sequential(
@@ -52,7 +52,11 @@ class GATv2(torch.nn.Module):
             x = F.relu(self.convs[l](x.float(), edge_index))
 
         x = self.pooling(x, batch)
-        x = F.dropout(x, p=self.dropout)
+        if self.dropout != 0:
+            x = F.dropout(x, p=self.dropout)
         x = self.classifier(x)
 
         return x
+
+    def load_weights(self, path):
+        self.load_state_dict(torch.load(path))
