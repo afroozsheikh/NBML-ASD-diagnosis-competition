@@ -1,4 +1,5 @@
 import argparse
+import os
 from pyrsistent import v
 from tqdm import tqdm
 import torch
@@ -51,8 +52,13 @@ def parse_arguments():
     parser.add_argument(
         "--weights_path",
         type=str,
-        default=r"C:\Users\Afrooz Sheikholeslam\Education\8th semester\Project1\competition",
-        help="Path to the weights path",
+        help="Path to the weights file",
+        required=False,
+    )
+    parser.add_argument(
+        "--results",
+        type=str,
+        help="Path to the folder you want to save the model results",
         required=True,
     )
     parser.add_argument(
@@ -88,6 +94,13 @@ def parse_arguments():
         type=int,
         default=10,
         help="Earlt Stopping patience",
+        required=False,
+    )
+    parser.add_argument(
+        "--threshold",
+        type=float,
+        default=0.2,
+        help="threshold use in data preprocessing section",
         required=False,
     )
 
@@ -163,6 +176,7 @@ def eval(model, device, dataloader, loss_fn):
 
 def main(args):
 
+    tag = "GATv2"
     device = "cuda" if torch.cuda.is_available() else "cpu"
     print("Used Device is : {}".format(device))
 
@@ -173,7 +187,7 @@ def main(args):
         time_series_path=args.time_series_path,
         test_time_series_path=args.test_time_series_path,
         batch_size=args.batch_size,
-        threshold=0.2,
+        threshold=args.threshold,
     )
 
     # print("======================================")
@@ -187,7 +201,7 @@ def main(args):
         heads=args.heads,
         num_layers=3,
         num_classes=1,
-        dropout_p=0.2,
+        dropout_rate=0,
     ).to(device)
 
     if args.weights_path is not None:
@@ -196,11 +210,11 @@ def main(args):
     count_parameters(model)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
+    # optimizer = torch.optim.SGD(model.parameters(), lr=args.lr, momentum=0.9)
     loss_fn = torch.nn.BCEWithLogitsLoss()
 
     train_losses = []
     val_losses = []
-    last_val_loss = 0
     best_val_loss = 1000
     trigger_times = 0
 
@@ -234,26 +248,27 @@ def main(args):
             f"Val_Accuracy: {100 * val_metrics['acc']:.2f}%"
         )
 
-        # Model Checkpoint
-        if val_loss > best_val_loss:
-            torch.save(model.state_dict(), args.weights_path)
-            print(f"Model Checkpointed: model saved in {args.weights_path}")
-
         # Early stopping
-        if val_loss > last_val_loss:
+        if val_loss >= best_val_loss:
             trigger_times += 1
             print(
-                f"Val_Loss didn't improve from {last_val_loss}, trigger_times is {trigger_times}"
+                f"Val_Loss didn't improve from {best_val_loss}, trigger_times is {trigger_times}"
             )
 
             if trigger_times >= args.patience:
                 print("Early stopping reached trigger_times limit")
+                break
 
         else:
-            print(f"Val_Loss improved from {last_val_loss} to {val_loss}")
+            print(f"Val_Loss improved from {best_val_loss} to {val_loss}")
             trigger_times = 0
 
-        last_val_loss = val_loss
+        # Model Checkpoint
+        if val_loss < best_val_loss:
+            weights_path = os.path.join(args.results, f"model_weights_{tag}.pt")
+            torch.save(model.state_dict(), weights_path)
+            best_val_loss = val_loss
+            print(f"Model Checkpointed: model saved in {weights_path}")
 
     plot_loss(train_losses, val_losses)
 
