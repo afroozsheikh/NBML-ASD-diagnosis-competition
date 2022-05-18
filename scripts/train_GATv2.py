@@ -135,20 +135,6 @@ def eval_batch(model, device, batch):
     return y_pred, y_true
 
 
-def eval_batch(model, device, batch):
-
-    model.eval()
-    batch = batch.to(device)
-
-    with torch.no_grad():
-        y_pred = model(batch).detach().cpu()
-
-    y_pred = y_pred.detach().cpu()
-    y_true = batch.y.view(y_pred.shape).detach().cpu()
-
-    return y_pred, y_true
-
-
 def eval(model, device, dataloader, loss_fn):
 
     model.eval()
