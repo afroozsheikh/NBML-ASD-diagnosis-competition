@@ -150,12 +150,14 @@ def eval_batch(model, device, batch):
     with torch.no_grad():
         y_pred = model(batch).detach().cpu()
 
+    y_pred = y_pred.detach().cpu()
     y_true = batch.y.view(y_pred.shape).detach().cpu()
 
     return y_pred, y_true
 
 
-def eval(model, device, dataloader):
+def eval(model, device, dataloader, loss_fn):
+
     model.eval()
     y_true = []
     y_pred = []
@@ -198,6 +200,7 @@ def main(args):
     # df = pd.DataFrame(next(iter(train_loader)).x.numpy())
     # print(df.describe())
     # print("======================================")
+
     model = GATv2(
         input_feat_dim=next(iter(train_loader)).x.shape[1],
         dim_shapes=[(64, 32), (32, 16), (16, 16)],
