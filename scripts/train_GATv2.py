@@ -138,6 +138,7 @@ def main(args):
     print("Used Device is : {}".format(device))
 
     train_loader, val_loader, test_loader = data_preparation(
+<<<<<<< HEAD
         adj_path=args.adj_path,
         test_adj_path=args.test_adj_path,
         y_path=args.y_path,
@@ -145,6 +146,9 @@ def main(args):
         test_time_series_path=args.test_time_series_path,
         batch_size=args.batch_size,
         threshold=0.2,
+=======
+        args.adj_path, args.y_path, args.batch_size
+>>>>>>> 2c7f0a8 (rebase conflicts)
     )
 
     # print("======================================")
