@@ -49,7 +49,7 @@ class GATv2(torch.nn.Module):
             x = self.linear(x.float())
 
         for l in range(self.num_layers):
-            x = F.relu(self.convs[l](x.float(), edge_index))
+            x = F.relu(self.convs[l](x, edge_index))
 
         x = self.pooling(x, batch)
         if self.dropout != 0:
