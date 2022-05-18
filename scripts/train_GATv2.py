@@ -239,11 +239,6 @@ def main(args):
             f"Val_Accuracy: {100 * val_metrics['acc']:.2f}%"
         )
 
-        # Model Checkpoint
-        if val_loss > best_val_loss:
-            torch.save(model.state_dict(), args.weights_path)
-            print(f"Model Checkpointed: model saved in {args.weights_path}")
-
         # Early stopping
         if val_loss >= best_val_loss:
             trigger_times += 1
