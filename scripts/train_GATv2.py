@@ -156,7 +156,7 @@ def eval(model, device, dataloader, loss_fn):
     y_true = y_true.detach().cpu().int()
     y_pred = y_pred.detach().cpu().int()
 
-    return val_loss, y_pred, y_true
+    return val_loss.item(), y_pred, y_true
 
 
 def main(args):
