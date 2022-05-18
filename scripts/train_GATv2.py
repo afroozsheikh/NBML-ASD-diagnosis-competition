@@ -1,9 +1,5 @@
 import argparse
-<<<<<<< HEAD
 import os
-=======
-from pyrsistent import v
->>>>>>> 1627380 (Model checkpoint added, load_weights added)
 from tqdm import tqdm
 import torch
 import pandas as pd
@@ -55,7 +51,6 @@ def parse_arguments():
     parser.add_argument(
         "--weights_path",
         type=str,
-<<<<<<< HEAD
         help="Path to the weights file",
         required=False,
     )
@@ -63,10 +58,6 @@ def parse_arguments():
         "--results",
         type=str,
         help="Path to the folder you want to save the model results",
-=======
-        default=r"C:\Users\Afrooz Sheikholeslam\Education\8th semester\Project1\competition",
-        help="Path to the weights path",
->>>>>>> 1627380 (Model checkpoint added, load_weights added)
         required=True,
     )
     parser.add_argument(
@@ -229,10 +220,6 @@ def main(args):
 
     train_losses = []
     val_losses = []
-<<<<<<< HEAD
-=======
-    last_val_loss = 0
->>>>>>> 1627380 (Model checkpoint added, load_weights added)
     best_val_loss = 1000
     trigger_times = 0
 
