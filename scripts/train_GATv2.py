@@ -1,6 +1,5 @@
 import argparse
 import os
-from pyrsistent import v
 from tqdm import tqdm
 import torch
 import pandas as pd
