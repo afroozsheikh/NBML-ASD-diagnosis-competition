@@ -191,7 +191,6 @@ def main(args):
     # df = pd.DataFrame(next(iter(train_loader)).x.numpy())
     # print(df.describe())
     # print("======================================")
-
     model = GATv2(
         input_feat_dim=next(iter(train_loader)).x.shape[1],
         dim_shapes=[(64, 32), (32, 16), (16, 16)],
