@@ -6,20 +6,20 @@ from torch_geometric.nn import GATv2Conv, global_max_pool
 
 
 class GATv2(torch.nn.Module):
-    def __init__(
-        self, input_feat_dim, dim_shapes, heads, num_layers, num_classes, dropout_rate=0
-    ):
+    def __init__(self, input_feat_dim, dim_shapes, heads, num_classes, dropout_rate=0):
 
         super(GATv2, self).__init__()
-        assert num_layers >= 1, "Number of layers should be more than or equal to 1"
-        self.num_layers = num_layers
+        self.num_layers = len(dim_shapes)
+        assert (
+            self.num_layers >= 1
+        ), "Number of layers should be more than or equal to 1"
         self.linear = None
 
         if input_feat_dim != dim_shapes[0][0]:
             self.linear = nn.Linear(input_feat_dim, dim_shapes[0][0])
 
         self.convs = nn.ModuleList()
-        for l in range(num_layers):
+        for l in range(self.num_layers):
             if l == 0:
                 self.convs.append(
                     GATv2Conv(dim_shapes[l][0], dim_shapes[l][1], heads=heads)
