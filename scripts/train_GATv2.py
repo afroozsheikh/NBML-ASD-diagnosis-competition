@@ -102,6 +102,13 @@ def parse_arguments():
         help="threshold use in data preprocessing section",
         required=False,
     )
+    parser.add_argument(
+        "--dropout_rate",
+        type=float,
+        default=0,
+        help="dropout rate used before preprocessing linear layers",
+        required=False,
+    )
 
     args = parser.parse_args()
     return args
@@ -185,7 +192,7 @@ def main(args):
         dim_shapes=[(64, 32), (32, 16), (16, 16)],
         heads=args.heads,
         num_classes=1,
-        dropout_rate=0,
+        dropout_rate=args.dropout_rate,
     ).to(device)
 
     if args.weights_path is not None:
