@@ -2,24 +2,33 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from torch_geometric.nn import GATv2Conv, global_max_pool
+from torch_geometric.nn import GATv2Conv, global_mean_pool
 
 
 class GATv2(torch.nn.Module):
     def __init__(
-        self, input_feat_dim, dim_shapes, heads, num_layers, num_classes, dropout_rate=0
+        self,
+        input_feat_dim,
+        dim_shapes,
+        heads,
+        num_classes,
+        dropout_rate=0,
+        last_sigmoid=False,
     ):
 
         super(GATv2, self).__init__()
-        assert num_layers >= 1, "Number of layers should be more than or equal to 1"
-        self.num_layers = num_layers
+        self.num_layers = len(dim_shapes)
+        self.last_sigmoid = last_sigmoid
+        assert (
+            self.num_layers >= 1
+        ), "Number of layers should be more than or equal to 1"
         self.linear = None
 
         if input_feat_dim != dim_shapes[0][0]:
             self.linear = nn.Linear(input_feat_dim, dim_shapes[0][0])
 
         self.convs = nn.ModuleList()
-        for l in range(num_layers):
+        for l in range(self.num_layers):
             if l == 0:
                 self.convs.append(
                     GATv2Conv(dim_shapes[l][0], dim_shapes[l][1], heads=heads)
@@ -30,10 +39,11 @@ class GATv2(torch.nn.Module):
                 )
 
         self.dropout = dropout_rate
-        self.pooling = global_max_pool
+        self.pooling = global_mean_pool
 
         self.classifier = nn.Sequential(
             nn.Linear(heads * dim_shapes[-1][1], 16),
+            nn.ReLU(),
             nn.Linear(16, num_classes),
         )
 
@@ -55,6 +65,9 @@ class GATv2(torch.nn.Module):
         if self.dropout != 0:
             x = F.dropout(x, p=self.dropout)
         x = self.classifier(x)
+
+        if self.last_sigmoid:
+            return torch.sigmoid(x)
 
         return x
 

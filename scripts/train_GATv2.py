@@ -184,7 +184,6 @@ def main(args):
         input_feat_dim=next(iter(train_loader)).x.shape[1],
         dim_shapes=[(64, 32), (32, 16), (16, 16)],
         heads=args.heads,
-        num_layers=3,
         num_classes=1,
         dropout_rate=0,
     ).to(device)

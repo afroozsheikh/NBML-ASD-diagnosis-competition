@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 
 def get_metrics(y_pred, y_true):
 
+    y_pred = torch.sigmoid(y_pred)
     y_pred_int = (y_pred >= 0.5).int()
 
     metrics = {}
