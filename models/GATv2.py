@@ -12,7 +12,7 @@ class GATv2(torch.nn.Module):
         dim_shapes,
         heads,
         num_classes,
-        dropout_rate=0,
+        dropout_rate=0.0,
         last_sigmoid=False,
     ):
 
@@ -62,7 +62,7 @@ class GATv2(torch.nn.Module):
             x = F.relu(self.convs[l](x.float(), edge_index))
 
         x = self.pooling(x, batch)
-        if self.dropout != 0:
+        if self.dropout != 0.0:
             x = F.dropout(x, p=self.dropout)
         x = self.classifier(x)
 
