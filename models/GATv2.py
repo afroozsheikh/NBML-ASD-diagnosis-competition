@@ -2,14 +2,23 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from torch_geometric.nn import GATv2Conv, global_max_pool
+from torch_geometric.nn import GATv2Conv, global_mean_pool
 
 
 class GATv2(torch.nn.Module):
-    def __init__(self, input_feat_dim, dim_shapes, heads, num_classes, dropout_rate=0):
+    def __init__(
+        self,
+        input_feat_dim,
+        dim_shapes,
+        heads,
+        num_classes,
+        dropout_rate=0,
+        last_sigmoid=False,
+    ):
 
         super(GATv2, self).__init__()
         self.num_layers = len(dim_shapes)
+        self.last_sigmoid = last_sigmoid
         assert (
             self.num_layers >= 1
         ), "Number of layers should be more than or equal to 1"
@@ -30,7 +39,7 @@ class GATv2(torch.nn.Module):
                 )
 
         self.dropout = dropout_rate
-        self.pooling = global_max_pool
+        self.pooling = global_mean_pool
 
         self.classifier = nn.Sequential(
             nn.Linear(heads * dim_shapes[-1][1], 16),
@@ -56,6 +65,9 @@ class GATv2(torch.nn.Module):
         if self.dropout != 0:
             x = F.dropout(x, p=self.dropout)
         x = self.classifier(x)
+
+        if self.last_sigmoid:
+            return torch.sigmoid(x)
 
         return x
 

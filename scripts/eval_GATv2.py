@@ -95,9 +95,9 @@ def eval_test(model, device, dataloader):
             pred = model(batch)
             y_pred.append(pred)
 
-    y_pred = torch.cat(y_pred, dim=0).float().squeeze().detach().cpu().int()
+    y_pred = torch.cat(y_pred, dim=0).float().squeeze().detach().cpu()
 
-    return y_pred
+    return (y_pred >= 0.5).int()
 
 
 def main(args):
@@ -122,6 +122,7 @@ def main(args):
         heads=args.heads,
         num_classes=1,
         dropout_rate=0,
+        last_sigmoid=True,
     ).to(device)
 
     if args.weights_path is not None:
