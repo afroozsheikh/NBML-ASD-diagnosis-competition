@@ -129,10 +129,10 @@ def main(args):
 
     count_parameters(model)
 
-    test_y_pred = eval(model, device, test_loader)
+    test_y_pred = eval_test(model, device, test_loader)
 
-    print(f"test data size: {len(test_loader)}")
     print(f"test_y_pred shape: {test_y_pred.shape}")
+    print(f"test_y_pred : {test_y_pred}")
 
 
 if __name__ == "__main__":
