@@ -16,7 +16,7 @@ class GATv2(torch.nn.Module):
         self.linear = None
 
         if input_feat_dim != dim_shapes[0][0]:
-            self.linear = nn.Linear(input_feat_dim, dim_shapes[0][0])
+            self.linear = nn.Sequential(nn.Linear(input_feat_dim, dim_shapes[0][0]))
 
         self.convs = nn.ModuleList()
         for l in range(self.num_layers):
@@ -34,6 +34,7 @@ class GATv2(torch.nn.Module):
 
         self.classifier = nn.Sequential(
             nn.Linear(heads * dim_shapes[-1][1], 16),
+            nn.ReLU(),
             nn.Linear(16, num_classes),
         )
 
