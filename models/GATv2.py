@@ -25,7 +25,7 @@ class GATv2(torch.nn.Module):
         self.linear = None
 
         if input_feat_dim != dim_shapes[0][0]:
-            self.linear = nn.Sequential(nn.Linear(input_feat_dim, dim_shapes[0][0]))
+            self.linear = nn.Linear(input_feat_dim, dim_shapes[0][0])
 
         self.convs = nn.ModuleList()
         for l in range(self.num_layers):
