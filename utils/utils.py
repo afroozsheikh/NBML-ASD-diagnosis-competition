@@ -44,7 +44,6 @@ def plot_loss(train_losses, val_losses):
     plt.legend(loc="upper right")
     plt.title("Traing and Validation losses curve")
     plt.show()
-    input()
 
 
 def plot_confusion_matrix(
