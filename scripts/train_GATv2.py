@@ -6,7 +6,7 @@ import pandas as pd
 
 from models.GATv2 import GATv2
 from data.data_preparation import data_preparation
-from utils.utils import get_metrics, count_parameters, plot_loss
+from utils.utils import get_metrics, count_parameters, plot_loss, plot_confusion_matrix
 
 
 def parse_arguments():
@@ -261,6 +261,19 @@ def main(args):
             best_val_loss = val_loss
             print(f"Model Checkpointed: model saved in {weights_path}")
 
+    # Evaluating the best model
+    print("Evaluating the best model...")
+    # model.load_weights(weights_path)
+    model.load_weights(args.weights_path)
+
+    val_loss, val_y_pred, val_y_true = eval(model, device, val_loader, loss_fn)
+    val_metrics = get_metrics(val_y_pred, val_y_true)
+
+    print(f"Validation Loss is : {val_loss:.4f}")
+    print(f"Validation accuracy is : {100 * val_metrics['acc']:.2f}")
+
+    label_names = ["0", "1"]
+    plot_confusion_matrix(cm=val_metrics["cm"], classes=label_names)
     plot_loss(train_losses, val_losses)
 
 
